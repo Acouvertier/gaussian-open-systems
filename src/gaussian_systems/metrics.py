@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.typing as npt
-from scipy.linalg import eigvals, det, cholesky, slogdet, solve
+from scipy.linalg import eigvals, det, cholesky, solve
 from .conventions import mean_subsystem, covariance_subsystem, symplectic_matrix, symmetrize_matrix
 
 _ppt_matrix = np.diag([1,1,-1,1])
@@ -20,21 +20,21 @@ def state_purity(covariance_matrix:npt.NDArray[np.number]) -> np.number:
 def renyi_two_entropy(covariance_matrix:npt.NDArray[np.number])  -> np.number:
     return -np.log(state_purity(covariance_matrix))
 
-def lambda_matrix(covariance_matrix:npt.NDArray[np.number])  -> npt.NDArray[npt.number]:
+def lambda_matrix(covariance_matrix:npt.NDArray[np.number])  -> npt.NDArray[np.number]:
     n = int((covariance_matrix.shape)[0]/2)
     omega_matrix = symplectic_matrix(n)
     return symmetrize_matrix(-omega_matrix @ covariance_matrix @ omega_matrix @ covariance_matrix)
 
-def gamma_matrix(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> npt.NDArray[npt.number]:
+def gamma_matrix(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> npt.NDArray[np.number]:
     n = int((covariance_matrix1.shape)[0]/2)
     omega_matrix = symplectic_matrix(n)
     return omega_matrix @ covariance_matrix1 @ omega_matrix @ covariance_matrix2 - 0.25*np.identity(2*n)
 
-def sigma_matrix(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> npt.NDArray[npt.number]:
+def sigma_matrix(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> npt.NDArray[np.number]:
     return symmetrize_matrix(covariance_matrix1 + covariance_matrix2)
 
 def _logdet_spd(matrix:npt.NDArray[np.number]) -> np.number:
-    logdet_val = np.sum(np.log(np.diagonal(cholesky(matrix))))
+    logdet_val = 2*np.sum(np.log(np.diagonal(cholesky(matrix))))
     return logdet_val
 
 def fidelity_fixed_parts(mean_covariance_tuple1:tuple[npt.NDArray[np.number],npt.NDArray[np.number]], mean_covariance_tuple2:tuple[npt.NDArray[np.number],npt.NDArray[np.number]]) -> tuple[np.number,np.number]:
@@ -44,7 +44,7 @@ def fidelity_fixed_parts(mean_covariance_tuple1:tuple[npt.NDArray[np.number],npt
     sigma = sigma_matrix(covariance1,covariance2)
     return (_logdet_spd(sigma),np.real(np.exp(-0.25*du@(solve(sigma,du)))))
 
-def calculate_lambda(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> npt.number:
+def calculate_lambda(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> np.number:
     lambdas = [lambda_matrix(cov) for cov in [covariance_matrix1, covariance_matrix2]]
     eigens = [np.sqrt(np.abs(eigvals(lamb))) for lamb in lambdas]
 
@@ -52,10 +52,10 @@ def calculate_lambda(covariance_matrix1:npt.NDArray[np.number],covariance_matrix
     vals = [np.prod(np.real((spectrum-0.5)*(spectrum+0.5))) for spectrum in eigens]
     return np.max([0,(4**n)*vals[0]*vals[1]])
 
-def calculate_gamma(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> npt.number:
+def calculate_gamma(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> np.number:
     n = int((covariance_matrix1.shape)[0]/2)
     gamma = gamma_matrix(covariance_matrix1, covariance_matrix2)
-    gammaSign, gammaVal = slogdet(gamma)
+    gammaSign, gammaVal = np.linalg.slogdet(gamma)
     return np.max([0,(4**n)*gammaSign*np.exp(gammaVal)])
     
 
@@ -75,7 +75,7 @@ def two_mode_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.numbe
     return np.sqrt((np.sqrt(gamma_value)+np.sqrt(lambda_value)+np.sqrt(np.sqrt(gamma_value + lambda_value)**2 - delta))/delta)*exponential_part
 
 def compute_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.number],npt.NDArray[np.number]], mean_covariance_tuple2:tuple[npt.NDArray[np.number],npt.NDArray[np.number]]) -> np.number:
-    delta, exponential_part = fidelity_exponential(mean_covariance_tuple1, mean_covariance_tuple2)
+    delta, exponential_part = fidelity_fixed_part(mean_covariance_tuple1, mean_covariance_tuple2)
     covariance1 = mean_covariance_tuple1[1]
     covariance2 = mean_covariance_tuple2[1]
     n = int((covariance1.shape)[0]/2)
@@ -92,6 +92,15 @@ def compute_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.number
         w_eigs = np.real(eigvals(w_auxiliary))
         f_tot = np.prod(np.array([np.sqrt(wi + np.sqrt((wi+1)*(wi-1))) if wi > 1 else 1 for wi in w_eigs]))
         return (f_tot/(delta**0.25))*exponential_part
+
+def valid_covariance(covariance_matrix:npt.NDArray[np.number], tol:1e-8 = np.number) -> bool:
+    n = int((covariance_matrix.shape[0])/2)
+    if not np.allclose(covariance_matrix, covariance_matrix.T):
+        cov_sym = symmetrize_matrix(covariance_matrix)
+    
+    eigs = np.real(eigvals(cov_sym + 0.5j*symplectic_matrix(n)))
+    return np.all(eigs >= -tol)
+    
         
         
     

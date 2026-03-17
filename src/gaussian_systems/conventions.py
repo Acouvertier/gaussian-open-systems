@@ -40,7 +40,7 @@ def mean_subsystem(mean_vector:npt.NDArray[np.number], indices: tuple[int, ...])
 def covariance_subsystem(covariance_matrix:npt.NDArray[np.number], indices: tuple[int, ...]) -> npt.NDArray[np.number]:
     n = int((covariance_matrix.shape)[0]/2)
     final_idx = index_list(n, indices)
-    return covariance_matrix[final_idx,final_idx]
+    return covariance_matrix[final_idx,:][:,final_idx]
 
 def compress_mean_covariance(mean_vector:npt.NDArray[np.number], covariance_matrix:npt.NDArray[np.number]) -> npt.NDArray[np.number]:
     return np.append(mean_vector, covariance_matrix.flatten())
