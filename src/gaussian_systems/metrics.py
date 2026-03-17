@@ -1,7 +1,9 @@
 import numpy as np
 import numpy.typing as npt
-from scipy.linalg import eigvals, det, cholesky, solve
+from scipy.linalg import eigvals, det, cholesky, solve, eigh
 from .conventions import mean_subsystem, covariance_subsystem, symplectic_matrix, symmetrize_matrix
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
 
 _ppt_matrix = np.diag([1,1,-1,1])
 
@@ -86,20 +88,58 @@ def compute_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.number
     else:
         omega_matrix = symplectic_matrix(n)
         
-        w1, w2 = [-2*1j*cov@omega_matrix for cov in [covariance1, covariance2]]
+        w1, w2 = [-2j*cov@omega_matrix for cov in [covariance1, covariance2]]
         w1_w2_inv = solve(w1 + w2,np.identity(2*n))
         w_auxiliary = -  w1_w2_inv @ (np.identity(2*n) + w2@w1) 
         w_eigs = np.real(eigvals(w_auxiliary))
         f_tot = np.prod(np.array([np.sqrt(wi + np.sqrt((wi+1)*(wi-1))) if wi > 1 else 1 for wi in w_eigs]))
         return (f_tot/(delta**0.25))*exponential_part
 
-def valid_covariance(covariance_matrix:npt.NDArray[np.number], tol:1e-8 = np.number) -> bool:
+def valid_covariance(covariance_matrix:npt.NDArray[np.number], tol:np.number = 1e-8) -> bool:
     n = int((covariance_matrix.shape[0])/2)
     if not np.allclose(covariance_matrix, covariance_matrix.T):
         cov_sym = symmetrize_matrix(covariance_matrix)
-    
+    else:
+        cov_sym = covariance_matrix
     eigs = np.real(eigvals(cov_sym + 0.5j*symplectic_matrix(n)))
-    return np.all(eigs >= -tol)
+    return np.all(eigs >= -1*tol)
+
+def plot_gaussian(mean_vector, covariance_matrix, ax=None, n_std=2):
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    n = int(len(mean_vector)/2)
+    means =  [mean_subsystem(mean_vector, (i,)) for i in range(1,n+1)]
+    covariances =  [covariance_subsystem(covariance_matrix, (i,)) for i in range(1,n+1)]
+
+    for i in range(n):
+        mean = means[i]
+        covariance = covariances[i]
+        eigvals, eigvecs = eigh(covariance)
+        
+        order = eigvals.argsort()[::-1]
+        eigvals = eigvals[order]
+        eigvecs = eigvecs[:,order]
+
+        angle = np.degrees(np.arctan2(eigvecs[1,0],eigvecs[0,0]))
+
+        width = 2 * n_std * np.sqrt(eigvals[0])
+        height = 2 * n_std * np.sqrt(eigvals[1])
+
+        ax.add_patch(Ellipse(
+            xy=mean,
+            width=width,
+            height=height,
+            angle=angle,
+            fill=False,
+            linewidth=2
+        ))
+
+        ax.scatter(*mean)
+
+        ax.set_aspect("equal")
+    return ax
     
         
         
