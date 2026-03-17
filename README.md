@@ -1,5 +1,4 @@
-# Gaussian CV Toolkit (Working Title)
-
+# Gaussian CV Toolkit
 A modular Python toolkit for simulating **Gaussian continuous-variable quantum systems** in quadrature phase space.
 
 This project implements state construction, Gaussian unitary transformations, and diagnostic metrics using covariance matrix formalism. It is designed as a reusable simulation backbone for research in open quantum systems and Gaussian quantum information.
