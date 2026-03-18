@@ -95,15 +95,6 @@ def compute_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.number
         f_tot = np.prod(np.array([np.sqrt(wi + np.sqrt((wi+1)*(wi-1))) if wi > 1 else 1 for wi in w_eigs]))
         return (f_tot/(delta**0.25))*exponential_part
 
-def valid_covariance(covariance_matrix:npt.NDArray[np.number], tol:np.number = 1e-8) -> bool:
-    n = int((covariance_matrix.shape[0])/2)
-    if not np.allclose(covariance_matrix, covariance_matrix.T):
-        cov_sym = symmetrize_matrix(covariance_matrix)
-    else:
-        cov_sym = covariance_matrix
-    eigs = np.real(eigvals(cov_sym + 0.5j*symplectic_matrix(n)))
-    return np.all(eigs >= -1*tol)
-
 def plot_gaussian(mean_vector, covariance_matrix, ax=None, n_std=2):
 
     if ax is None:
