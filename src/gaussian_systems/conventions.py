@@ -50,7 +50,7 @@ def _valid_mean_covariance(mean_vector:npt.NDArray[np.number],covariance_matrix:
     _valid_mean_vector(mean_vector)
     _valid_covariance_matrix(covariance_matrix)
     if mean_vector.shape[0] != covariance_matrix.shape[0]:
-    raise ValueError(f"mean vector and covariance matrix dimensions must match, got {mean_vector.shape[0]} and {covariance_matrix.shape}.")
+        raise ValueError(f"mean vector and covariance matrix dimensions must match, got {mean_vector.shape[0]} and {covariance_matrix.shape}.")
         
 
 def _x_subsystem(n:Integral , indices: tuple[Integral , ...]) -> npt.NDArray[int]:
@@ -88,7 +88,7 @@ def _extract_mean_covariance(mean_covariance_vector:npt.NDArray[np.number]) -> t
     mean_vector = mean_covariance_vector[0:2*n]
     covariance_matrix = symmetrize_matrix((mean_covariance_vector[2*n:]).reshape( (2*n,2*n) ))
     
-     _valid_mean_covariance(mean_vector,covariance_matrix)
+    _valid_mean_covariance(mean_vector,covariance_matrix)
 
     return ( mean_vector, covariance_matrix )
 

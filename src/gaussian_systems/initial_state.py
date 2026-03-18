@@ -106,7 +106,7 @@ def apply_1_mode_squeeze_unitary(mean_vector_covariance_matrix_tuple:tuple[npt.N
     _valid_mode_number(n)
     _valid_indices(n,(mode_id,))
     
-    transformed_idx = index_list(n,(mode_id,))
+    transformed_idx = _index_list(n,(mode_id,))
     selection_matrix = (np.identity(2*n))[transformed_idx,:]
     
     single_squeeze_matrix = single_mode_squeeze_matrix(squeeze_magnitude, squeeze_angle)
@@ -174,7 +174,7 @@ def apply_2_mode_squeeze_unitary(mean_vector_covariance_matrix_tuple:tuple[npt.N
     return (n_mode_squeeze_unitary @ mean_vector, symmetrize_matrix((n_mode_squeeze_unitary @ covariance_matrix) @ n_mode_squeeze_unitary.T))
 
 class GaussianCVState:
-    def __init__(self, mean_vector: npt.NDArray[np.flota64], covariance_matrix: npt.NDArray[np.flota64]):
+    def __init__(self, mean_vector: npt.NDArray[np.float64], covariance_matrix: npt.NDArray[np.float64]):
         _valid_mean_covariance(mean_vector, covariance_matrix)
         self.n = len(mean_vector) // 2
         self._mean_vector = mean_vector.copy()
@@ -214,6 +214,16 @@ class GaussianCVState:
     def two_mode_squeeze(self, squeeze_tuple:tuple[Real,Real], mode_ids:tuple[Integral,Integral]):
         m0, c0 = self._mean_vector, self._covariance_matrix
         self._mean_vector, self._covariance_matrix = apply_2_mode_squeeze_unitary((m0,c0), squeeze_tuple, mode_ids)
+        return self
+
+    def single_mode_thermal_occupation(self, nbar:Real, mode_id:Integral):
+        if not isinstance(mode_id,Integral):
+            raise TypeError(f"provided mode index must be integer valued. Got {type(mode_id)}")
+        _valid_indices(self.n,(mode_id,))
+        idx, idp = _index_list(self.n,(mode_id,))
+
+        self._covariance_matrix[idx, idx] = nbar + 0.5
+        self._covariance_matrix[idp, idp] = nbar + 0.5
         return self
 
     def state_to_vector(self) -> npt.NDArray[np.float64]:
