@@ -77,7 +77,7 @@ def two_mode_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.numbe
     return np.sqrt((np.sqrt(gamma_value)+np.sqrt(lambda_value)+np.sqrt(np.sqrt(gamma_value + lambda_value)**2 - delta))/delta)*exponential_part
 
 def compute_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.number],npt.NDArray[np.number]], mean_covariance_tuple2:tuple[npt.NDArray[np.number],npt.NDArray[np.number]]) -> np.number:
-    delta, exponential_part = fidelity_fixed_part(mean_covariance_tuple1, mean_covariance_tuple2)
+    delta, exponential_part = fidelity_fixed_parts(mean_covariance_tuple1, mean_covariance_tuple2)
     covariance1 = mean_covariance_tuple1[1]
     covariance2 = mean_covariance_tuple2[1]
     n = int((covariance1.shape)[0]/2)

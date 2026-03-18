@@ -58,7 +58,7 @@ def two_mode_mixing_matrix(coupling_magnitude:np.number,coupling_angle:np.number
 
 def apply_2_mode_mix_unitary(mean_vector_covariance_matrix_tuple:tuple[npt.NDArray[np.number],npt.NDArray[np.number]],
                                  coupling_magnitude_angle_tuple:tuple[np.number,np.number], mode_ids:tuple[int,int]) -> tuple[npt.NDArray[np.number],npt.NDArray[np.number]]:
-    mean_vector, covariance_matrix = mean_vector_variance_matrix_tuple
+    mean_vector, covariance_matrix = mean_vector_covariance_matrix_tuple
     coupling_magnitude, coupling_angle = coupling_magnitude_angle_tuple
     n = int(len(mean_vector)/2)
     transformed_idx = index_list(n,mode_ids)
@@ -106,9 +106,9 @@ def generate_initial_mean_covariance(n:int, nbars:npt.NDArray[np.number]=None, o
         elif op.lower() == "1s":
             base_mean, base_covariance = apply_1_mode_squeeze_unitary((base_mean, base_covariance), value, mode_idx)
         elif op.lower() == "2s":
-            base_mean, base_covariance = apply_2_mode_squeeze_unitary((base_mean, base_covariance),value, mode_idx)
+            base_mean, base_covariance = apply_2_mode_squeeze_unitary((base_mean, base_covariance), value, mode_idx)
         elif op.lower() == "2m":
-            base_mean, base_covariance = apply_2_mode_mix_unitary((base_mean, base_covariance),value, mode_idx)
+            base_mean, base_covariance = apply_2_mode_mix_unitary((base_mean, base_covariance), value, mode_idx)
         else:
             print(f"Invalid operation choice: {op}. Expected '1d', '1s', '2s', '2m'. Skipped.")
 

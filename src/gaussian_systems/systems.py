@@ -70,7 +70,7 @@ def compile_hamiltonian(n:int,frequency_tuple:tuple[float,...]=(),interaction_ar
 
 """
 decay_array element (x_p_a:str,mode_id:int,rate:float)
-x_p_a: x, p, a
+x_p_a: x, p, a, ad
 """
 def compile_lindblad(n:int, decay_array:list[tuple,...]=None) -> npt.NDArray[np.number]:
     decay_coefficient_array = np.zeros(2*n, dtype=complex)
@@ -91,26 +91,36 @@ def compile_lindblad(n:int, decay_array:list[tuple,...]=None) -> npt.NDArray[np.
             idx, idp = index_list(n,(mode_id,))
             decay_coefficient_array[idx] += root_rate/np.sqrt(2)
             decay_coefficient_array[idp] += 1j*root_rate/np.sqrt(2)
+        elif x_p_a.lower() == "ad":
+            idx, idp = index_list(n,(mode_id,))
+            decay_coefficient_array[idx] += root_rate/np.sqrt(2)
+            decay_coefficient_array[idp] -= 1j*root_rate/np.sqrt(2)
         else:
             print(f"compile_lindblad: invalid decay operator choice: {x_p_a}. Valid choices are x, p, or a. Skipped.")
 
     return decay_coefficient_array
 
-def generate_drift_diffusion(n:int, frequency_tuple:tuple[float,...]=(),interaction_array:list[tuple,...]=None, decay_array:list[tuple,...]=None) -> tuple[npt.NDArray[np.number],npt.NDArray[np.number]]:
+def generate_drift_diffusion(n:int, frequency_tuple:tuple[float,...]=(),interaction_array:list[tuple,...]=None, decays_tuple:tuple[list[tuple,...],...]=None) -> tuple[npt.NDArray[np.number],npt.NDArray[np.number]]:
     
     hamiltonian_matrix = compile_hamiltonian(n,frequency_tuple,interaction_array)
-    lindblad_array = compile_lindblad(n, decay_array)
+    lindblad_matrix = np.zeros((2*n,2*n),dtype='complex128')
+    
+    if decays_tuple is None:
+        decays_tuple = ()
+    
+    for decay_array in decays_tuple:
+        lindblad_array = compile_lindblad(n, decay_array)
+        lindblad_matrix += np.outer(np.conjugate(lindblad_array),lindblad_array)
+    
     omega_matrix = symplectic_matrix(n)
-
-    lindblad_matrix = np.outer(np.conjugate(lindblad_array),lindblad_array)
 
     drift = omega_matrix @ (hamiltonian_matrix + np.imag(lindblad_matrix))
     diffusion = omega_matrix @ np.real(lindblad_matrix) @ (omega_matrix.T)
 
     return (drift, diffusion)
 
-def heisenberg_eom(n:int, frequency_tuple:tuple[float,...]=(),interaction_array:list[tuple,...]=None, decay_array:list[tuple,...]=None) -> Callable[[float,npt.NDArray[np.number]],npt.NDArray[np.number]]:
-    drift, diffusion = generate_drift_diffusion(n, frequency_tuple,interaction_array, decay_array)
+def heisenberg_eom(n:int, frequency_tuple:tuple[float,...]=(),interaction_array:list[tuple,...]=None,decays_tuple:tuple[list[tuple,...],...]=None) -> Callable[[float,npt.NDArray[np.number]],npt.NDArray[np.number]]:
+    drift, diffusion = generate_drift_diffusion(n, frequency_tuple,interaction_array, decays_tuple)
     def dxdt(t:float,mean_covariance:npt.NDArray):
         x0, c0 = extract_mean_covariance(mean_covariance)
         c0_sym = symmetrize_matrix(c0)
