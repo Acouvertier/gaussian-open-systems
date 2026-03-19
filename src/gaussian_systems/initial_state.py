@@ -1,42 +1,13 @@
 import numpy as np
 import numpy.typing as npt
-from .conventions import symmetrize_matrix, rotation_matrix, _index_list, _compress_mean_covariance, _valid_mode_number, _valid_mean_covariance, _valid_indices
-from numbers import Real, Integral, Complex
 import warnings
+import matplotlib.pyplot as plt
+from scipy.linalg import eigh
+from matplotlib.patches import Ellipse
 
-def _valid_nbars_array(nbars:npt.NDArray[np.float64]) -> None:
-    if not isinstance(nbars, np.ndarray):
-        raise TypeError(f"thermal occupations must be a numpy array. Got {type(nbars)}")
-    if nbars.ndim != 1:
-        raise ValueError(f"thermal occupation must be a 1D numpy array. Got array with dimensions {nbars.ndim}")
-    if not np.isrealobj(nbars):
-        raise ValueError(f"thermal occupations must be real-valued.")
-    if not np.all(nbars >= 0):
-        raise ValueError(f"thermal occupations must be non-negative. Got {nbars}.")
-
-def _valid_tuple_pair(tuple_pair:tuple) -> None:
-    if not isinstance(tuple_pair, tuple):
-        raise TypeError(f"Expected tuple to unpack. Got {type(tuple_pair)}")
-    if len(tuple_pair) != 2:
-        raise ValueError(f"Expected a tuple of length 2. Got {tuple_pair}.")
-
-def _valid_mean_vector_covariance_matrix_tuple(mean_vector_covariance_matrix_tuple:tuple[npt.NDArray[np.float64],npt.NDArray[np.float64]]) -> None:
-    _valid_tuple_pair(mean_vector_covariance_matrix_tuple)
-    mean_vector, covariance_matrix = mean_vector_covariance_matrix_tuple
-    _valid_mean_covariance(mean_vector, covariance_matrix)
-
-def _valid_parameter_pair(magnitude:Real, angle:Real) -> None:
-    if not isinstance(magnitude, Real):
-        raise TypeError(f"parameter magnitude must be real-valued. Got {type(magnitude)}.")
-    if magnitude < 0:
-        raise ValueError(f"parameter magnitude must be non-negative. Got {magnitude}")
-    if not isinstance(angle, Real):
-        raise TypeError(f"parameter angle must be real-valued. Got {angle}.")
-
-def _valid_parameter_tuple(parameter_magnitude_angle_tuple:tuple) -> None:
-    _valid_tuple_pair(parameter_magnitude_angle_tuple)
-    magnitude, angle = parameter_magnitude_angle_tuple
-    _valid_parameter_pair(magnitude, angle)
+from .conventions import symmetrize_matrix, rotation_matrix, index_list, compress_mean_covariance, mean_subsystem, covariance_subsystem
+from ._validation import _valid_mode_number, _valid_nbars_array, _valid_mean_vector_covariance_matrix_tuple, _valid_indices, _valid_parameter_pair, _valid_parameter_tuple, _valid_mean_covariance
+from numbers import Real, Integral, Complex
 
 """Public"""
 
@@ -77,7 +48,7 @@ def apply_1_mode_displacement(mean_vector_covariance_matrix_tuple:tuple[npt.NDAr
     x_disp = np.sqrt(2) * np.real(displacement)
     p_disp = np.sqrt(2) * np.imag(displacement)
 
-    idx, idp = _index_list(n,(mode_id,))
+    idx, idp = index_list(n,(mode_id,))
     
     x_shift_vector = np.zeros(2*n)
     p_shift_vector = np.zeros(2*n)
@@ -106,7 +77,7 @@ def apply_1_mode_squeeze_unitary(mean_vector_covariance_matrix_tuple:tuple[npt.N
     _valid_mode_number(n)
     _valid_indices(n,(mode_id,))
     
-    transformed_idx = _index_list(n,(mode_id,))
+    transformed_idx = index_list(n,(mode_id,))
     selection_matrix = (np.identity(2*n))[transformed_idx,:]
     
     single_squeeze_matrix = single_mode_squeeze_matrix(squeeze_magnitude, squeeze_angle)
@@ -136,7 +107,7 @@ def apply_2_mode_mix_unitary(mean_vector_covariance_matrix_tuple:tuple[npt.NDArr
     _valid_mode_number(n)
     _valid_indices(n,mode_ids)
     
-    transformed_idx = _index_list(n,mode_ids)
+    transformed_idx = index_list(n,mode_ids)
     selection_matrix = (np.identity(2*n))[transformed_idx,:]
     two_mix_matrix = two_mode_mixing_matrix(coupling_magnitude,coupling_angle)
     n_mode_mix_unitary = np.identity(2*n) + (selection_matrix.T) @ (two_mix_matrix - np.identity(4)) @ selection_matrix
@@ -167,7 +138,7 @@ def apply_2_mode_squeeze_unitary(mean_vector_covariance_matrix_tuple:tuple[npt.N
     _valid_mode_number(n)
     _valid_indices(n,mode_ids)
     
-    transformed_idx = _index_list(n,mode_ids)
+    transformed_idx = index_list(n,mode_ids)
     selection_matrix = (np.identity(2*n))[transformed_idx,:]
     two_squeeze_matrix = two_mode_squeezing_matrix(squeeze_magnitude,squeeze_angle)
     n_mode_squeeze_unitary = np.identity(2*n) + (selection_matrix.T) @ (two_squeeze_matrix - np.identity(4)) @ selection_matrix
@@ -220,18 +191,53 @@ class GaussianCVState:
         if not isinstance(mode_id,Integral):
             raise TypeError(f"provided mode index must be integer valued. Got {type(mode_id)}")
         _valid_indices(self.n,(mode_id,))
-        idx, idp = _index_list(self.n,(mode_id,))
+        idx, idp = index_list(self.n,(mode_id,))
 
         self._covariance_matrix[idx, idx] = nbar + 0.5
         self._covariance_matrix[idp, idp] = nbar + 0.5
         return self
 
     def state_to_vector(self) -> npt.NDArray[np.float64]:
-        m0, c0 = self._mean_vector, self._covariance_matrix
-        return _compress_mean_covariance(m0, c0)
+        m0, c0 = self.mean_vector, self.covariance_matrix
+        return compress_mean_covariance(m0, c0)
 
     def copy_state(self):
         return GaussianCVState(self._mean_vector.copy(), self._covariance_matrix.copy())
+
+    def plot_state(self, ax=None,n_std=2):
+        if ax is None:
+            fig, ax = plt.subplots()
+            
+        means =  [mean_subsystem(self.mean_vector, (i,)) for i in range(1,self.n+1)]
+        covariances =  [covariance_subsystem(self.covariance_matrix, (i,)) for i in range(1,self.n+1)]
+    
+        for i in range(self.n):
+            mean = means[i]
+            covariance = covariances[i]
+            eigvals, eigvecs = eigh(covariance)
+            
+            order = eigvals.argsort()[::-1]
+            eigvals = eigvals[order]
+            eigvecs = eigvecs[:,order]
+    
+            angle = np.degrees(np.arctan2(eigvecs[1,0],eigvecs[0,0]))
+    
+            width = 2 * n_std * np.sqrt(eigvals[0])
+            height = 2 * n_std * np.sqrt(eigvals[1])
+    
+            ax.add_patch(Ellipse(
+                xy=mean,
+                width=width,
+                height=height,
+                angle=angle,
+                fill=False,
+                linewidth=2
+            ))
+    
+            ax.scatter(*mean)
+    
+            ax.set_aspect("equal")
+        return ax
 
     
     
