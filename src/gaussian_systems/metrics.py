@@ -3,42 +3,35 @@ import numpy.typing as npt
 from scipy.linalg import eigvals, det, cholesky, solve, eigh, issymmetric
 from numbers import Real
 
-from .conventions import mean_subsystem, covariance_subsystem, symplectic_matrix, symmetrize_matrix, physical_covariance_matrix
-from ._validation import _valid_fidelity_input, _valid_covariance_matrix, _valid_square_matrix, _valid_indices, _valid_tuple_pair
+from .conventions import mean_subsystem, covariance_subsystem, symplectic_matrix, symmetrize_matrix, require_physical_covariance
+from ._validation import _valid_fidelity_input, _valid_covariance_matrix, _require_square_matrix, _valid_indices, _require_tuple_length, _require_symmetric
 
 _ppt_matrix = np.diag([1,1,-1,1])
 
-def _valid_physical_covariance(covariance_matrix:npt.NDArray[np.float64]) -> None:
-    _valid_covariance_matrix(covariance_matrix)
-    if not physical_covariance_matrix(covariance_matrix):
-        raise ValueError(f"Provided covariance matrix failed the heisenberg uncertainty relation. Got {covariance_matrix}")
+def _matching_covariances(cov1:npt.NDArray[np.float64], cov2:npt.NDArray[np.float64]) -> None:
+    require_physical_covariance(cov1)
+    require_physical_covariance(cov2)
+    if (cov1.shape)[0] != (cova2.shape)[0]:
+        raise ValueError(f"Covariances matrices have different dimension. Got system1: {cov1} and system2: {cov2}")
 
 def _lambda_matrix(covariance_matrix:npt.NDArray[np.float64])  -> npt.NDArray[np.float64]:
-    _valid_physical_covariance(covariance_matrix)
+    require_physical_covariance(covariance_matrix)
     n = (covariance_matrix.shape)[0]//2
     omega_matrix = symplectic_matrix(n)
     return symmetrize_matrix(-omega_matrix @ covariance_matrix @ omega_matrix @ covariance_matrix)
 
 def _gamma_matrix(covariance_matrix1:npt.NDArray[np.float64],covariance_matrix2:npt.NDArray[np.float64])  -> npt.NDArray[np.float64]:
-    _valid_physical_covariance(covariance_matrix1)
-    _valid_physical_covariance(covariance_matrix2)
-    if (covariance_matrix1.shape)[0] != (covariance_matrix2.shape)[0]:
-        raise ValueError(f"Cannot combine covariance matrics with different dimensions. Got system1: {covariance_matrix1} and system2: {covariance_matrix2}")
+    _matching_covariances(covariance_matrix1, covariance_matrix2)
     n = (covariance_matrix1.shape)[0]//2
     omega_matrix = symplectic_matrix(n)
     return omega_matrix @ covariance_matrix1 @ omega_matrix @ covariance_matrix2 - 0.25*np.identity(2*n)
 
 def _sigma_matrix(covariance_matrix1:npt.NDArray[np.float64],covariance_matrix2:npt.NDArray[np.float64])  -> npt.NDArray[np.float64]:
-    _valid_physical_covariance(covariance_matrix1)
-    _valid_physical_covariance(covariance_matrix2)
-    if (covariance_matrix1.shape)[0] != (covariance_matrix2.shape)[0]:
-        raise ValueError(f"Cannot combine covariance matrics with different dimensions. Got system1: {covariance_matrix1} and system2: {covariance_matrix2}")
+    _matching_covariances(covariance_matrix1, covariance_matrix2)
     return symmetrize_matrix(covariance_matrix1 + covariance_matrix2)
 
 def _logdet_spd(matrix:npt.NDArray[np.float64]) -> np.float64:
-    _valid_square_matrix(matrix)
-    if not issymmetric(matrix, atol=1e-8, rtol=1e-8):
-        raise ValueError(f"cholesky expected a matrix that is approximately symmetric. Got {matrix}")
+    _require_symmetric(matrix, "provided matrix")
     if not np.allclose(eigvals(matrix), np.zeros(matrix.shape[0])):
         raise ValueError(f"cholesky expected a matrix that is approximately positive. Got {matrix}")
     logdet_val = 2*np.sum(np.log(np.diagonal(cholesky(matrix))))
@@ -53,10 +46,7 @@ def _fidelity_fixed_parts(mean_covariance_tuple1:tuple[npt.NDArray[np.number],np
     return (_logdet_spd(sigma),np.real(np.exp(-0.25*du@(solve(sigma,du)))))
 
 def _calculate_lambda(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> np.number:
-    _valid_physical_covariance(covariance_matrix1)
-    _valid_physical_covariance(covariance_matrix2)
-    if (covariance_matrix1.shape)[0] != (covariance_matrix2.shape)[0]:
-        raise ValueError(f"Cannot combine covariance matrics with different dimensions. Got system1: {covariance_matrix1} and system2: {covariance_matrix2}")
+    _matching_covariances(covariance_matrix1, covariance_matrix2)
     lambdas = [_lambda_matrix(cov) for cov in [covariance_matrix1, covariance_matrix2]]
     eigens = [np.sqrt(np.abs(eigvals(lamb))) for lamb in lambdas]
 
@@ -65,10 +55,7 @@ def _calculate_lambda(covariance_matrix1:npt.NDArray[np.number],covariance_matri
     return np.max([0,(4**n)*vals[0]*vals[1]])
 
 def _calculate_gamma(covariance_matrix1:npt.NDArray[np.number],covariance_matrix2:npt.NDArray[np.number])  -> np.number:
-    _valid_physical_covariance(covariance_matrix1)
-    _valid_physical_covariance(covariance_matrix2)
-    if (covariance_matrix1.shape)[0] != (covariance_matrix2.shape)[0]:
-        raise ValueError(f"Cannot combine covariance matrics with different dimensions. Got system1: {covariance_matrix1} and system2: {covariance_matrix2}")
+    _matching_covariances(covariance_matrix1, covariance_matrix2)
     n = (covariance_matrix1.shape)[0]//2
     gamma = _gamma_matrix(covariance_matrix1, covariance_matrix2)
     gammaSign, gammaVal = np.linalg.slogdet(gamma)
@@ -77,10 +64,10 @@ def _calculate_gamma(covariance_matrix1:npt.NDArray[np.number],covariance_matrix
 """PUBLIC"""
 
 def compute_logarithmic_negativity(covariance_matrix:npt.NDArray[np.float64], subsystem:tuple[int,int] = (1,2)) -> Real:
-    _valid_physical_covariance(covariance_matrix)
+    require_physical_covariance(covariance_matrix)
     n = (covariance_matrix.shape)[0]//2
    
-    _valid_tuple_pair(subsystem)
+    _require_tuple_length(subsystem, 2, "subsystem")
     _valid_indices(n, subsystem)
     sub_covariance = symmetrize_matrix(covariance_subsystem(covariance_matrix,subsystem))
     omega_matrix = symplectic_matrix(2)
@@ -90,7 +77,7 @@ def compute_logarithmic_negativity(covariance_matrix:npt.NDArray[np.float64], su
     return log_neg
     
 def state_purity(covariance_matrix:npt.NDArray[np.float64], subsystem:tuple[int,...]|None = None) -> Real:
-    _valid_physical_covariance(covariance_matrix)
+    require_physical_covariance(covariance_matrix)
     n =  (covariance_matrix.shape)[0]//2
     if subsystem is None:
         subsystem = tuple(range(1,n+1))

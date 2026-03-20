@@ -1,5 +1,7 @@
-from .conventions import symmetrize_matrix, symplectic_matrix, index_list, compress_mean_covariance, extract_mean_covariance, mean_subsystem, covariance_subsystem, physical_covariance_matrix
-from ._validation import  _valid_mode_number, _valid_frequency_array, _valid_term_inputs, _valid_decay_element, _valid_system, _valid_indices, _valid_single_pole_input, _valid_covariance_matrix, _valid_t_eval
+from .conventions import symmetrize_matrix, symplectic_matrix, index_list, compress_mean_covariance, extract_mean_covariance, mean_subsystem, covariance_subsystem, physical_covariance_matrix, require_physical_covariance
+
+from ._validation import  _valid_mode_number, _valid_frequency_array, _valid_term_inputs, _valid_decay_element, _valid_system, _valid_indices, _valid_single_pole_input, _valid_covariance_matrix, _valid_t_eval, _require_nonnegative_real_scalar
+
 from .initial_state import GaussianCVState
 from .solution import GaussianSolution
 
@@ -18,7 +20,7 @@ def _mutate_frequency_array(n:Integral, frequency_array:npt.NDArray[Real] | None
         _valid_frequency_array(frequency_array)
         if n > len(frequency_array):
             missing_modes_count = int(n-len(frequency_array))
-            warnings.warn(f"Warning: {n}-mode system but only {len(frequency_array)} frequencies provided. Assuming 0 frequency for modes {len(frequency_array)+1}-{n}.")
+            warnings.warn(f"Warning: {n}-mode system but only {len(frequency_array)} frequencies provided. Assuming a rotated frame such that modes {len(frequency_array)+1}-{n} are resonant.")
             return np.append(frequency_array,np.zeros(missing_modes_count))
         elif n == len(frequency_array):
             return frequency_array
@@ -67,6 +69,7 @@ def _xipj_term(n:Integral,subsystem:tuple[Integral,Integral], coupling:Real) -> 
     return blank_matrix
 
 def _embedding_matrix(n:Integral) ->npt.NDArray[np.float64]:
+    _valid_mode_number(n)
     return np.kron(np.identity(2),np.eye(n+1, n))
 
 """
@@ -74,8 +77,9 @@ decay_array element (x_p_a:str,mode_id:int,rate:float)
 x_p_a: x, p, a, ad
 """
 
-def _compile_single_lindblad_matrix(n:int, decay_array:list[tuple,...]=None) -> npt.NDArray[np.number]:
-    decay_coefficient_array = np.zeros(2*n, dtype=complex)
+def _compile_single_lindblad_matrix(n: Integral, decay_array:list[tuple,...]|None=None) -> npt.NDArray[np.complex128]:
+    _valid_mode_number(n)
+    decay_coefficient_array = np.zeros(2*n, dtype=np.complex128)
 
     if decay_array is None:
         decay_array = []
@@ -101,17 +105,29 @@ def _compile_single_lindblad_matrix(n:int, decay_array:list[tuple,...]=None) -> 
 
     return np.outer(np.conjugate(decay_coefficient_array),decay_coefficient_array)
 
+def _apply_gaussian_channel(mean_drift:npt.NDArray[np.float64], covariance_drift:npt.NDArray[np.complex128], mean_vector:npt.NDArray[np.float64], covariance_vector:npt.NDArray[np.float64], t:Real) -> tuple[npt.NDArray[np.float64],npt.NDArray[np.float64]]:
+    n = len(mean_vector)//2
+    St = expm(t*mean_drift)
+    Mt = expm(t*covariance_drift)
+    
+    evolved_mean = St @ mean_vector
+    evolved_covariance_vector = Mt @ covariance_vector
+    evolved_covariance = (evolved_covariance_vector[:-1]).reshape((2*n,2*n))
+    return (evolved_mean, symmetrize_matrix(evolved_covariance))
+    
+"""PUBLIC"""
+
 class GaussianCVSystem:
-    def __init__(self, hamiltonian_matrix:npt.NDArray[np.float64],lindblad_matrix:npt.NDArray[np.float64]):
+    def __init__(self, hamiltonian_matrix:npt.NDArray[np.float64],lindblad_matrix:npt.NDArray[np.complex128]):
         _valid_system(hamiltonian_matrix, lindblad_matrix)
-        self._n = (hamiltonian_matrix.shape[0]) // 2
+        self.n = (hamiltonian_matrix.shape[0]) // 2
         self._hamiltonian_matrix = hamiltonian_matrix
         self._lindblad_matrix = lindblad_matrix
 
     @classmethod
     def free_evolution(cls,n:Integral, frequency_array:npt.NDArray[np.float64]| None = None):
         ham = _self_energies(n,frequency_array)
-        lind = np.zeros((2*n,2*n), dtype=complex)
+        lind = np.zeros((2*n,2*n), dtype=np.complex128)
         return cls(ham,lind)
 
     @property
@@ -119,62 +135,60 @@ class GaussianCVSystem:
         return self._hamiltonian_matrix.copy()
 
     @property
-    def lindblad_matrix(self) -> npt.NDArray[np.float64]:
+    def lindblad_matrix(self) -> npt.NDArray[np.complex128]:
         return self._lindblad_matrix.copy()
 
     def position_coupling(self, subsystem:tuple[Integral,Integral], coupling:Real):
-        self._hamiltonian_matrix += _xixj_term(self._n, subsystem, coupling)
+        self._hamiltonian_matrix += _xixj_term(self.n, subsystem, coupling)
         return self
 
     def momentum_coupling(self, subsystem:tuple[Integral,Integral], coupling:Real):
-        self._hamiltonian_matrix += _pipj_term(self._n, subsystem, coupling)
+        self._hamiltonian_matrix += _pipj_term(self.n, subsystem, coupling)
         return self
 
     def position_i_momentum_j_coupling(self, subsystem:tuple[Integral,Integral], coupling:Real):
-        self._hamiltonian_matrix += _xipj_term(self._n, subsystem, coupling)
+        self._hamiltonian_matrix += _xipj_term(self.n, subsystem, coupling)
         return self
 
     def beamsplitter_coupling(self, subsystem:tuple[Integral,Integral], coupling:Real):
-        self._hamiltonian_matrix += _xixj_term(self._n, subsystem, coupling)
-        self._hamiltonian_matrix += _pipj_term(self._n, subsystem, coupling)
+        self._hamiltonian_matrix += _xixj_term(self.n, subsystem, coupling)
+        self._hamiltonian_matrix += _pipj_term(self.n, subsystem, coupling)
         return self
 
     def squeezer_coupling(self, subsystem:tuple[Integral,Integral], coupling:Real):
-        self._hamiltonian_matrix += _xixj_term(self._n, subsystem, coupling)
-        self._hamiltonian_matrix -= _pipj_term(self._n, subsystem, coupling)
+        self._hamiltonian_matrix += _xixj_term(self.n, subsystem, coupling)
+        self._hamiltonian_matrix -= _pipj_term(self.n, subsystem, coupling)
         return self
 
     def position_difference_coupling(self, subsystem:tuple[Integral,Integral], coupling:Real):
-        self._hamiltonian_matrix -= 2*_xixj_term(self._n, subsystem, coupling)
-        self._hamiltonian_matrix += _xixj_term(self._n, (subsystem[0],subsystem[0]), coupling)
-        self._hamiltonian_matrix += _xixj_term(self._n, (subsystem[1],subsystem[1]), coupling)
+        self._hamiltonian_matrix -= 2*_xixj_term(self.n, subsystem, coupling)
+        self._hamiltonian_matrix += _xixj_term(self.n, (subsystem[0],subsystem[0]), coupling)
+        self._hamiltonian_matrix += _xixj_term(self.n, (subsystem[1],subsystem[1]), coupling)
         return self
 
     def multi_position_dissipator(self, subsystem:tuple[Integral,...], decay:Real):
-        _valid_indices(self._n, subsystem)
+        _valid_indices(self.n, subsystem)
         decay_array = [("x", idx, decay) for idx in subsystem]
-        self._lindblad_matrix += _compile_single_lindblad_matrix(self._n, decay_array)
+        self._lindblad_matrix += _compile_single_lindblad_matrix(self.n, decay_array)
         return self
 
     def multi_annihilation_dissipator(self, subsystem:tuple[Integral,...], decay:Real):
-        _valid_indices(self._n, subsystem)
+        _valid_indices(self.n, subsystem)
         decay_array = [("a", idx, decay) for idx in subsystem]
-        self._lindblad_matrix += _compile_single_lindblad_matrix(self._n, decay_array)
+        self._lindblad_matrix += _compile_single_lindblad_matrix(self.n, decay_array)
         return self
 
     def multi_thermal_dissipator(self, subsystem:tuple[Integral,...], decay:Real, thermal_occupation:Real):
-        if not isinstance(thermal_occupation,Real):
-            raise TypeError(f"thermal occupation must be real. Got {type(thermal_occupation)}")
-        if thermal_occupation < 0:
-            raise ValueError(f"thermal occupation must be non-negative. Got {thermal_occupation}")
-        _valid_indices(self._n, subsystem)
+        _require_nonnegative_real_scalar(thermal_occupation, 'thermal occupation')
+        _require_nonnegative_real_scalar(decay, "decay rate")
+        _valid_indices(self.n, subsystem)
         decay_array = [("a", idx, decay*(thermal_occupation+1)) for idx in subsystem]
         thermalizing_array = [("ad", idx, decay*(thermal_occupation)) for idx in subsystem]
-        self._lindblad_matrix += _compile_single_lindblad_matrix(self._n, decay_array + thermalizing_array)
+        self._lindblad_matrix += _compile_single_lindblad_matrix(self.n, decay_array + thermalizing_array)
         return self
 
     def generate_drift_and_diffusion(self):
-        omega_matrix = symplectic_matrix(self._n)
+        omega_matrix = symplectic_matrix(self.n)
 
         drift = np.real(omega_matrix @ (self.hamiltonian_matrix + np.imag(self.lindblad_matrix)))
         diffusion = np.real(omega_matrix @ np.real(self.lindblad_matrix) @ (omega_matrix.T))
@@ -185,8 +199,8 @@ class GaussianCVSystem:
         return GaussianCVSystem(self._hamiltonian_matrix.copy(), self._lindblad_matrix.copy())
 
     def gaussian_channel(self):
-        m = int(2*self._n)
-        m2 = int(4*self._n**2)
+        m = int(2*self.n)
+        m2 = int(4*self.n**2)
         I = np.identity(m)
         A, D = self.generate_drift_and_diffusion()
         K, D_vec = np.kron(A,I) + np.kron(I, A), D.flatten() 
@@ -213,30 +227,22 @@ class GaussianCVSystem:
 
         for t in t_eval:
             mean, covariance = _apply_gaussian_channel(A, A_covariance, x0, c0_vec, t)
-            if not physical_covariance_matrix(covariance):
-                raise ValueError(f"Nonphysical covariance at t={t}. Got {covariance}")
+            
+            require_physical_covariance(covariance)
+            
             means.append(mean)
             covariances.append(covariance)
         
         return GaussianSolution(t_eval,means,covariances)
 
-def _apply_gaussian_channel(mean_drift:npt.NDArray[np.float64], covariance_drift:npt.NDArray[np.float64], mean_vector:npt.NDArray[np.float64], covariance_vector:npt.NDArray[np.float64], t:Real) -> tuple[npt.NDArray[np.float64],npt.NDArray[np.float64]]:
-    n = len(mean_vector)//2
-    St = expm(t*mean_drift)
-    Mt = expm(t*covariance_drift)
-    
-    evolved_mean = St @ mean_vector
-    evolved_covariance_vector = Mt @ covariance_vector
-    evolved_covariance = (evolved_covariance_vector[:-1]).reshape((2*n,2*n))
-    return (evolved_mean, symmetrize_matrix(evolved_covariance))
-
 def _valid_state_system_pair(state:GaussianCVState, system:GaussianCVSystem) -> None:
     if not isinstance(state, GaussianCVState):
-        raise TypeError(f"embedding requires a valid state object. Got {type(state)}")
+        raise TypeError(f"operation requires a valid state object. Got {type(state)}")
     if not isinstance(system, GaussianCVSystem):
-        raise TypeError(f"embedding requires a valid system object. Got {type(system)}")
-    if system._n != state.n:
-        raise ValueError(f"system and state objects must represent same mode number. System is {system._n}-modes, while State is {state.n}")
+        raise TypeError(f"operation requires a valid system object. Got {type(system)}")
+    if system.n != state.n:
+        raise ValueError(f"system and state objects must represent same mode number. System is {system.n}-modes, while State is {state.n}")
+
 
 def single_pole_ou_embedding(state:GaussianCVState, system:GaussianCVSystem, subsystem:tuple[Integral,...], coupling_types:tuple[str,...], memory_rate:Real, env_freq:Real, decay_rate:Real, thermal_occupation:Real):
     _valid_state_system_pair(state, system)
