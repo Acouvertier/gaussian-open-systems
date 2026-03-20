@@ -92,11 +92,11 @@ from gaussian_systems.initial_state import GaussianCVState
 
 state = GaussianCVState.vacuum(2)
 
-state.single_mode_squeeze(1.0, 1)
-state.single_mode_squeeze(1.0, 2)
+state.single_mode_squeeze((1.0, 0), 1) # squeezing is a tuple (magnitude,phase)
+state.single_mode_squeeze((1.0, 0), 2)
 
-state.single_mode_displacement(1.0, 1)
-state.single_mode_displacement(1.0, 2)
+state.single_mode_displacement(1.0, 1) # displacement can be any complex scalar
+state.single_mode_displacement(1.0 + 2.0j, 2)
 ```
 
 ---
