@@ -1,11 +1,12 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gaussian-open-systems"
 version = "0.1.0"
-description = "Simulation framework for Gaussian continuous-variable open quantum systems"
+description = "Gaussian open quantum systems with drift–diffusion dynamics and pseudomode-based non-Markovian extensions"
+authors = [{name="Austen Couvertier"}]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
