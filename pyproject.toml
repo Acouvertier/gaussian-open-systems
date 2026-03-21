@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gaussian-open-systems"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gaussian open quantum systems with drift–diffusion dynamics and pseudomode-based non-Markovian extensions"
 authors = [{name="Austen Couvertier"}]
 readme = "README.md"
