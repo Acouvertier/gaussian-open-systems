@@ -30,7 +30,7 @@ Compared to tools such as QuTiP or Strawberry Fields, the emphasis here is on tr
 
 ## Overview
 
-This library provides a modular framework for constructing, evolving, and analyzing multimode Gaussian quantum systems under quadratic Hamiltonians, Markovian dissipative channels, and non-Markovian dissipative channels via pseudomode embedding.
+This library provides a modular framework for constructing, evolving, and analyzing multimode Gaussian quantum systems under quadratic Hamiltonians and Markovian and non-Markovian dissipative channels via pseudomode embedding.
 
 The implementation operates entirely in phase space, evolving mean vectors and covariance matrices exactly using linear dynamics. It is designed to bridge theoretical modeling and computational simulation, enabling both reproduction of standard results and exploration of structured open-system dynamics.
 
@@ -71,7 +71,7 @@ t_eval = np.linspace(0, 20, 500) # time grid for simulation
 solution = system.evolve_state(state, t_eval) # .evolve_state applies the system to state over the time grid and returns a GaussianSolution object containing the time-trace
 
 # Metrics
-ent = solution.entanglement_time_trace((1, 2)) # computes the logarithmic negativity between modes (1,2) over the time grid defined by the solution object. Returns a a list of Reals representing the time-trace of the entanglement.
+ent = solution.entanglement_time_trace((1, 2)) # computes the logarithmic negativity between modes (1,2) over the time grid defined by the solution object. Returns a list of Reals representing the time-trace of the entanglement.
 pur = solution.purity_time_trace() # computes the purity of the entire system over the time grid. Returns a list of Reals representing the time-traced purity.
 ```
 
@@ -203,7 +203,7 @@ Metrics are evaluated directly from the solution:
 ```python
 ent = solution.entanglement_time_trace((1,2))
 pur = solution.purity_time_trace()
-entropy = solution.entropy_time_trace
+entropy = solution.entropy_time_trace()
 ```
 
 Available metrics:
