@@ -1,12 +1,24 @@
 # Gaussian Open Systems
 
-A structured simulation framework for Gaussian continuous-variable (CV) open quantum systems, supporting exact moment evolution, subsystem-resolved analysis, and finite-memory reservoir modeling via pseudomode embeddings.
+A Python framework for modeling Gaussian continuous-variable (CV) open quantum systems using explicit drift–diffusion dynamics in phase space.
+
+The library is designed for problems where the structure of the Gaussian channel is central: it evolves mean vectors and covariance matrices exactly under quadratic Hamiltonians and Lindblad dissipation, and extends naturally to finite-memory environments via pseudomode embeddings.
+
+### Scope and Positioning
+
+This project is not a general-purpose quantum simulation framework. Instead, it targets a narrower class of problems:
+
+- Gaussian states only (first and second moments)
+- time-independent quadratic generators
+- structured dissipation and reservoir modeling
+
+Compared to tools such as QuTiP or Strawberry Fields, the emphasis here is on transparency of the underlying Gaussian channel (drift–diffusion form) and direct access to its dynamical structure.
 
 ---
 
 ## Overview
 
-This library provides a modular framework for constructing, evolving, and analyzing multimode Gaussian quantum systems under quadratic Hamiltonians and dissipative channels.
+This library provides a modular framework for constructing, evolving, and analyzing multimode Gaussian quantum systems under quadratic Hamiltonians, Markovian dissipative channels, and non-Markovian dissipative channels via pseudomode embedding.
 
 The implementation operates entirely in phase space, evolving mean vectors and covariance matrices exactly using linear dynamics. It is designed to bridge theoretical modeling and computational simulation, enabling both reproduction of standard results and exploration of structured open-system dynamics.
 
