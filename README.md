@@ -1,6 +1,18 @@
 # Gaussian Open Systems
 
+[![PyPI](https://img.shields.io/pypi/v/gaussian-open-systems)](https://pypi.org/project/gaussian-open-systems/)
+
 A Python framework for modeling Gaussian continuous-variable (CV) open quantum systems using explicit drift–diffusion dynamics in phase space.
+
+---
+
+## Installation
+
+```bash
+pip install gaussian-open-systems
+```
+
+---
 
 The library is designed for problems where the structure of the Gaussian channel is central: it evolves mean vectors and covariance matrices exactly under quadratic Hamiltonians and Lindblad dissipation, and extends naturally to finite-memory environments via pseudomode embeddings.
 
@@ -32,6 +44,12 @@ Key capabilities:
 
 ---
 
+## Documentation
+
+[Full documentation is public for rapid prototyping. Click the link.](https://acouvertier.github.io/gaussian-open-systems/index.html)
+
+---
+
 # Quickstart Example
 
 ```python
@@ -56,12 +74,6 @@ solution = system.evolve_state(state, t_eval) # .evolve_state applies the system
 ent = solution.entanglement_time_trace((1, 2)) # computes the logarithmic negativity between modes (1,2) over the time grid defined by the solution object. Returns a a list of Reals representing the time-trace of the entanglement.
 pur = solution.purity_time_trace() # computes the purity of the entire system over the time grid. Returns a list of Reals representing the time-traced purity.
 ```
-
----
-
-## Documentation
-
-[Full documentation is public for rapid prototyping. Click the link.](https://acouvertier.github.io/gaussian-open-systems/index.html)
 
 ---
 
