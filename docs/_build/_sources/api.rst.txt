@@ -1,2 +1,39 @@
 API Reference
 ==============
+
+This page documents the public modules and objects exposed by the package.
+
+Initial States
+---------------
+
+.. automodule:: gaussian_systems.initial_state
+   :members:
+   :show-inheritance:
+
+Systems
+--------
+
+.. automodule:: gaussian_systems.systems
+   :members:
+   :show-inheritance:
+
+Solution
+---------
+
+.. automodule:: gaussian_systems.solution
+   :members:
+   :show-inheritance:
+
+Metrics
+--------
+
+.. automodule:: gaussian_systems.metrics
+   :members:
+   :show-inheritance:
+
+Conventions
+------------
+
+.. automodule:: gaussian_systems.conventions
+   :members:
+   :show-inheritance:

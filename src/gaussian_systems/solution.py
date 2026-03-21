@@ -47,16 +47,26 @@ class GaussianSolution:
         self.covariance_matrices = covariance_matrices
     def entanglement_time_trace(self, subsystem:tuple[int,int] = (1,2)):
         """
-        Initialize a Gaussian solution container.
+        Compute logarithmic negativity along the trajectory.
+
+        This method evaluates the logarithmic negativity of the specified
+        two-mode subsystem for each covariance matrix in the trajectory.
 
         Parameters
         ----------
-        t_eval : array-like
-            The time grid used for evolution.
-        mean_vectors : sequence of numpy.ndarray
-            The evolved mean vectors.
-        covariance_matrices : sequence of numpy.ndarray
-            The evolved covariance matrices.
+        subsystem : tuple of (int, int), optional
+            The two mode indices (1-based) defining the subsystem.
+            Default is ``(1, 2)``.
+
+        Returns
+        -------
+        list of Real
+            The logarithmic negativity evaluated at each time point.
+
+        Notes
+        -----
+        This method uses ``compute_logarithmic_negativity`` on each
+        covariance matrix in the trajectory.
         """
         return [compute_logarithmic_negativity(covariance, subsystem) for covariance in self.covariance_matrices]
     def purity_time_trace(self, subsystem:tuple[int,...]|None = None):

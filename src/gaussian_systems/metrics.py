@@ -573,7 +573,7 @@ def two_mode_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.float
 
         F_0^2(V1, V2)
         = 1 / (sqrt(Gamma) + sqrt(Lambda)
-               - sqrt((sqrt(Gamma) + sqrt(Lambda))^2 - Delta)),
+        - sqrt((sqrt(Gamma) + sqrt(Lambda))^2 - Delta)),
 
     where
 
@@ -587,7 +587,7 @@ def two_mode_gaussian_fidelity(mean_covariance_tuple1:tuple[npt.NDArray[np.float
 
         F_0^2(V1, V2)
         = (sqrt(Gamma) + sqrt(Lambda)
-           + sqrt((sqrt(Gamma) + sqrt(Lambda))^2 - Delta)) / Delta,
+        + sqrt((sqrt(Gamma) + sqrt(Lambda))^2 - Delta)) / Delta,
 
     and combined with the Gaussian displacement contribution. The returned
     value is the standard Uhlmann fidelity, not the root fidelity.

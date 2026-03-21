@@ -962,30 +962,30 @@ class GaussianCVSystem:
         vector and the vectorized covariance matrix in the x-then-p phase-space
         ordering
     
-            (x_1, ..., x_n, p_1, ..., p_n).
+        (x_1, ..., x_n, p_1, ..., p_n).
     
         The mean evolves as
     
-            d/dt mean = A @ mean,
+        d/dt mean = A @ mean,
     
         where ``A`` is the drift matrix.
     
         The covariance evolves according to
     
-            d/dt vec(cov) = K @ vec(cov) + vec(D),
+        d/dt vec(cov) = K @ vec(cov) + vec(D),
     
         where
     
-            K = A ⊗ I + I ⊗ A,
+        K = A ⊗ I + I ⊗ A,
     
         and ``D`` is the diffusion matrix. This affine evolution is embedded
         into a linear system by augmenting the state vector as
     
-            (vec(cov), 1),
+        (vec(cov), 1),
     
         yielding
     
-            d/dt [vec(cov); 1] = A_covariance @ [vec(cov); 1].
+        d/dt [vec(cov); 1] = A_covariance @ [vec(cov); 1].
     
         Parameters
         ----------
@@ -994,10 +994,10 @@ class GaussianCVSystem:
         Returns
         -------
         tuple of (numpy.ndarray, numpy.ndarray)
-            The pair ``(A, A_covariance)``, where:
-            - ``A`` has shape (2n, 2n) and governs mean evolution
-            - ``A_covariance`` has shape (4n^2 + 1, 4n^2 + 1) and governs the
-              augmented covariance evolution
+        The pair ``(A, A_covariance)``, where:
+        - ``A`` has shape (2n, 2n) and governs mean evolution
+        - ``A_covariance`` has shape (4n^2 + 1, 4n^2 + 1) and governs the
+        augmented covariance evolution
     
         Notes
         -----

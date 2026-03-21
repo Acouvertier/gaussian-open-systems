@@ -262,16 +262,16 @@ def compress_mean_covariance(mean_vector:npt.NDArray[np.number], covariance_matr
     This function concatenates a mean vector and covariance matrix into a
     one-dimensional array. The output is given by
 
-        [mean_vector, covariance_matrix.flatten()],
+    [mean_vector, covariance_matrix.flatten()],
 
     where the covariance matrix is flattened in row-major (C) order.
 
     Parameters
     ----------
     mean_vector : numpy.ndarray
-        The mean vector of shape (2n,).
+    The mean vector of shape (2n,).
     covariance_matrix : numpy.ndarray
-        The covariance matrix of shape (2n, 2n).
+    The covariance matrix of shape (2n, 2n).
 
     Returns
     -------
@@ -357,7 +357,7 @@ def mean_subsystem(mean_vector:npt.NDArray[np.number], indices: tuple[Integral, 
 
     For a subsystem with modes (i_1, ..., i_k), the returned vector is
     ordered as
-        (x_{i_1}, ..., x_{i_k}, p_{i_1}, ..., p_{i_k}).
+    (x_{i_1}, ..., x_{i_k}, p_{i_1}, ..., p_{i_k}).
 
     Parameters
     ----------
@@ -399,7 +399,7 @@ def covariance_subsystem(covariance_matrix:npt.NDArray[np.number], indices: tupl
 
     For a subsystem with modes (i_1, ..., i_k), the returned matrix
     corresponds to the quadratures
-        (x_{i_1}, ..., x_{i_k}, p_{i_1}, ..., p_{i_k}).
+    (x_{i_1}, ..., x_{i_k}, p_{i_1}, ..., p_{i_k}).
 
     Parameters
     ----------
@@ -438,41 +438,35 @@ def is_physical_covariance_matrix(covariance_matrix:npt.NDArray[np.float64], tol
     This function checks whether a covariance matrix satisfies the Gaussian
     quantum uncertainty relation
 
-        V + (i/2) Ω >= 0,
+    V + (i/2) Ω >= 0,
 
     where Ω is the canonical symplectic form for an n-mode system in the
     x-then-p phase-space ordering
 
-        (x_1, ..., x_n, p_1, ..., p_n).
+    (x_1, ..., x_n, p_1, ..., p_n).
 
     Parameters
     ----------
     covariance_matrix : numpy.ndarray
         The covariance matrix of shape (2n, 2n).
     tol : Real, optional
-        Numerical tolerance used in the positivity test. Eigenvalues greater
-        than or equal to ``-tol`` are accepted as non-negative. Default is 1e-8.
+        Numerical tolerance used in the positivity test. Eigenvalues greater than or equal to ``-tol`` are accepted as non-negative. Default is 1e-8.
 
     Returns
     -------
     bool
-        ``True`` if the covariance matrix satisfies the quantum uncertainty
-        relation within tolerance, and ``False`` otherwise.
+        ``True`` if the covariance matrix satisfies the quantum uncertainty relation within tolerance, and ``False`` otherwise.
 
     Raises
     ------
     TypeError
-        If ``covariance_matrix`` is not a NumPy array or if ``tol`` is not a
-        real scalar.
+        If ``covariance_matrix`` is not a NumPy array or if ``tol`` is not a real scalar.
     ValueError
-        If ``covariance_matrix`` is not a valid covariance matrix or if ``tol``
-        is not strictly positive.
+        If ``covariance_matrix`` is not a valid covariance matrix or if ``tol`` is not strictly positive.
 
     Notes
     -----
-    The covariance matrix is symmetrized internally as
-    ``(V + V.conj().T) / 2`` before testing physicality. This function checks
-    quantum admissibility, not just classical positive semidefiniteness.
+    The covariance matrix is symmetrized internally as ``(V + V.conj().T) / 2`` before testing physicality. This function checks quantum admissibility, not just classical positive semidefiniteness.
     """
     _valid_covariance_matrix(covariance_matrix)
     _require_positive_real_scalar(tol, "positive spectrum tolerance")
@@ -490,8 +484,7 @@ def require_physical_covariance(covariance_matrix:npt.NDArray[np.float64]) -> No
 
     This function validates that ``covariance_matrix`` is both:
     1. a valid classical covariance matrix (real, symmetric, positive semidefinite),
-    2. a valid quantum Gaussian covariance matrix satisfying the Heisenberg
-       uncertainty relation.
+    2. a valid quantum Gaussian covariance matrix satisfying the Heisenberg uncertainty relation.
 
     Parameters
     ----------
@@ -503,8 +496,7 @@ def require_physical_covariance(covariance_matrix:npt.NDArray[np.float64]) -> No
     TypeError
         If ``covariance_matrix`` is not a NumPy array.
     ValueError
-        If ``covariance_matrix`` is not a valid covariance matrix or fails
-        the Heisenberg uncertainty condition.
+        If ``covariance_matrix`` is not a valid covariance matrix or fails the Heisenberg uncertainty condition.
 
     Notes
     -----
