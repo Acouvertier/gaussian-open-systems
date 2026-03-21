@@ -94,10 +94,10 @@ def index_list(n:Integral, indices: tuple[Integral, ...]) -> npt.NDArray[int]:
 
     This function returns the indices corresponding to a subsystem defined
     by ``indices`` in an n-mode phase-space vector ordered as
-    (x_1, ..., x_n, p_1, ..., p_n).
+    $(x_1, ..., x_n, p_1, ..., p_n)$.
 
-    For a subsystem with modes (i_1, ..., i_k), the returned indices correspond to
-    (x_{i_1}, ..., x_{i_k}, p_{i_1}, ..., p_{i_k}),
+    For a subsystem with modes $(i_1, ..., i_k)$, the returned indices correspond to
+    $(x_{i_1}, ..., x_{i_k}, p_{i_1}, ..., p_{i_k})$,
     preserving the input ordering.
 
     Parameters
@@ -135,10 +135,10 @@ def symmetrize_matrix(matrix:npt.NDArray[np.number]) -> npt.NDArray[np.number]:
     Return the symmetric (Hermitian) part of a matrix.
 
     This function maps a square matrix ``matrix`` to its self-adjoint part:
-    (matrix + matrix.conj().T) / 2.
+    ``(matrix + matrix.conj().T) / 2``.
 
     For real-valued matrices, this reduces to standard symmetrization:
-    (A + A.T) / 2. For complex-valued matrices, this produces a Hermitian
+    ``(A + A.T) / 2``. For complex-valued matrices, this produces a Hermitian
     matrix.
 
     Parameters

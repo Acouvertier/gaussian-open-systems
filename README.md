@@ -200,6 +200,7 @@ pur_sub = solution.purity_time_trace((1,))
 ```
 
 The above example gives the purity of subsystem/mode 1 only. Extraction follows the same phase-space ordering:
+
 $$
 (x_1, \dots, x_k, p_1, \dots, p_k)
 $$

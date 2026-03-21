@@ -1,5 +1,5 @@
 Gaussian Open Systems
-====================
+=======================
 
 A simulation framework for Gaussian continuous-variable open quantum systems.
 

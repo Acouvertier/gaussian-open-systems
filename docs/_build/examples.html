@@ -12,6 +12,8 @@
     <script src="_static/documentation_options.js?v=2709fde1"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="api.html" />
@@ -33,7 +35,7 @@
 
           <div class="body" role="main">
             
-  <section id="examples">
+  <section class="tex2jax_ignore mathjax_ignore" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
 <p>This project includes three representative notebooks that demonstrate correctness, physical consistency, and advanced modeling capabilities.</p>
 <p>Each example is designed to highlight a distinct aspect of Gaussian open-system dynamics.</p>
@@ -42,8 +44,8 @@
 <h2>1. Validation: Two-Mode Squeezing under Thermal Loss<a class="headerlink" href="#validation-two-mode-squeezing-under-thermal-loss" title="Link to this heading">¶</a></h2>
 <p><strong>Notebook:</strong><br />
 <code class="docutils literal notranslate"><span class="pre">notebooks/01_validation_two_mode_squeezing_under_loss.ipynb</span></code></p>
-<p><strong>Repo link:</strong>
-<a class="reference external" href="https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/01_validation_two_mode_squeezing_under_loss.ipynb">project link</a></p>
+<p><strong>Repo Link:</strong></p>
+<p><a class="reference external" href="https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/01_validation_two_mode_squeezing_under_loss.ipynb">project link</a></p>
 <hr class="docutils" />
 <section id="purpose">
 <h3>Purpose<a class="headerlink" href="#purpose" title="Link to this heading">¶</a></h3>
@@ -54,18 +56,18 @@
 <ul class="simple">
 <li><p>Two-mode squeezed vacuum state</p></li>
 <li><p>Independent Markovian environments</p></li>
-<li><p>Variable thermal occupation $\bar{n}$</p></li>
+<li><p>Variable thermal occupation <span class="math notranslate nohighlight">\(\bar{n}\)</span></p></li>
 </ul>
 </section>
 <section id="key-results">
 <h3>Key Results<a class="headerlink" href="#key-results" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Entanglement decays monotonically to zero</p></li>
-<li><p>Higher $\bar{n}$ accelerates disentanglement</p></li>
+<li><p>Higher <span class="math notranslate nohighlight">\(\bar{n}\)</span> accelerates disentanglement</p></li>
 <li><p>Purity behavior distinguishes:</p>
 <ul>
-<li><p>$\bar{n} = 0$: transient mixing → recovery to pure vacuum</p></li>
-<li><p>$\bar{n} &gt; 0$: monotonic decay → thermal steady state</p></li>
+<li><p><span class="math notranslate nohighlight">\(\bar{n} = 0\)</span>: transient mixing → recovery to pure vacuum</p></li>
+<li><p><span class="math notranslate nohighlight">\(\bar{n} &gt; 0\)</span>: monotonic decay → thermal steady state</p></li>
 </ul>
 </li>
 </ul>
@@ -84,8 +86,8 @@
 <h2>2. Collective Dissipation: Phase-Dependent Entanglement Generation<a class="headerlink" href="#collective-dissipation-phase-dependent-entanglement-generation" title="Link to this heading">¶</a></h2>
 <p><strong>Notebook:</strong><br />
 <code class="docutils literal notranslate"><span class="pre">notebooks/02_markov_common_bath_baseline.ipynb</span></code></p>
-<p><strong>Repo link:</strong>
-<a class="reference external" href="https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/02_markov_common_bath_baseline.ipynb">project link</a></p>
+<p><strong>Repo Link:</strong></p>
+<p><a class="reference external" href="https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/02_markov_common_bath_baseline.ipynb">project link</a></p>
 <hr class="docutils" />
 <section id="id1">
 <h3>Purpose<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
@@ -96,15 +98,15 @@
 <ul class="simple">
 <li><p>Two separable single-mode squeezed states</p></li>
 <li><p>Collective annihilation dissipator</p></li>
-<li><p>Relative squeezing phase $\Delta\phi$</p></li>
+<li><p>Relative squeezing phase <span class="math notranslate nohighlight">\(\Delta\phi\)</span></p></li>
 </ul>
 </section>
 <section id="id3">
 <h3>Key Results<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>Aligned squeezing ($\Delta\phi = 0$) → maximal steady entanglement</p></li>
+<li><p>Aligned squeezing (<span class="math notranslate nohighlight">\(\Delta\phi = 0\)</span>) → maximal steady entanglement</p></li>
 <li><p>Partial misalignment → reduced entanglement</p></li>
-<li><p>Orthogonal squeezing ($\Delta\phi = \pi$) → suppressed entanglement</p></li>
+<li><p>Orthogonal squeezing (<span class="math notranslate nohighlight">\(\Delta\phi = \pi\)</span>) → suppressed entanglement</p></li>
 </ul>
 </section>
 <section id="id4">
@@ -121,8 +123,8 @@
 <h2>3. Finite-Memory Environments: OU Pseudomode Embedding<a class="headerlink" href="#finite-memory-environments-ou-pseudomode-embedding" title="Link to this heading">¶</a></h2>
 <p><strong>Notebook:</strong><br />
 <code class="docutils literal notranslate"><span class="pre">notebooks/03_ou_pseudomode_embedding_showcase.ipynb</span></code></p>
-<p><strong>Repo link:</strong>
-<a class="reference external" href="https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/03_ou_pseudomode_embedding_showcase.ipynb">project link</a></p>
+<p><strong>Repo Link:</strong></p>
+<p><a class="reference external" href="https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/03_ou_pseudomode_embedding_showcase.ipynb">project link</a></p>
 <hr class="docutils" />
 <section id="id5">
 <h3>Purpose<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>

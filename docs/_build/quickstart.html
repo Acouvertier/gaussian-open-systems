@@ -12,6 +12,8 @@
     <script src="_static/documentation_options.js?v=2709fde1"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Core Concepts" href="concepts.html" />
@@ -33,7 +35,7 @@
 
           <div class="body" role="main">
             
-  <section id="quickstart">
+  <section class="tex2jax_ignore mathjax_ignore" id="quickstart">
 <h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h1>
 <p>This example constructs a two-mode Gaussian state, defines a dissipative system, evolves the state in time, and evaluates simple observables from the resulting trajectory.</p>
 <section id="imports">
@@ -107,9 +109,10 @@
 <ul class="simple">
 <li><p>Phase-space ordering is always</p></li>
 </ul>
-<p>$$
+<div class="math notranslate nohighlight">
+\[
 (x_1, \dots, x_n, p_1, \dots, p_n)
-$$</p>
+\]</div>
 <ul class="simple">
 <li><p>Subsystems are specified using <strong>1-indexed</strong> mode labels.</p></li>
 <li><p>Evolution checks covariance matrices for quantum physicality at each time step.</p></li>
