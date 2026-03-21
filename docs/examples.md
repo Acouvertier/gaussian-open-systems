@@ -11,6 +11,12 @@ Each example is designed to highlight a distinct aspect of Gaussian open-system 
 **Notebook:**  
 `notebooks/01_validation_two_mode_squeezing_under_loss.ipynb`
 
+**Repo Link:**
+
+[project link](https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/01_validation_two_mode_squeezing_under_loss.ipynb)
+
+---
+
 ### Purpose
 
 Establishes correctness of Gaussian state evolution under independent thermal dissipation.
@@ -42,6 +48,12 @@ Establishes correctness of Gaussian state evolution under independent thermal di
 **Notebook:**  
 `notebooks/02_markov_common_bath_baseline.ipynb`
 
+**Repo Link:**
+
+[project link](https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/02_markov_common_bath_baseline.ipynb)
+
+---
+
 ### Purpose
 
 Demonstrates environment-induced entanglement and its dependence on squeezing phase.
@@ -70,6 +82,12 @@ Demonstrates environment-induced entanglement and its dependence on squeezing ph
 
 **Notebook:**  
 `notebooks/03_ou_pseudomode_embedding_showcase.ipynb`
+
+**Repo Link:**
+
+[project link](https://github.com/Acouvertier/gaussian-open-systems/blob/main/notebooks/03_ou_pseudomode_embedding_showcase.ipynb)
+
+---
 
 ### Purpose
 

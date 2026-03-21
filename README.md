@@ -20,6 +20,39 @@ Key capabilities:
 
 ---
 
+# Quickstart Example
+
+```python
+import numpy as np
+from gaussian_systems.initial_state import GaussianCVState # API layer that contains state constructors
+from gaussian_systems.systems import GaussianCVSystem # API layer that contains system dynamic constructors
+
+# State
+state = GaussianCVState.vacuum(2) # Initialize the state as 2 vacuum modes
+state.single_mode_squeeze((1.0,0.0), 1) # Squeeze mode #1 along it's position quadrature
+state.single_mode_squeeze((1.0,np.pi), 2) # Squeeze mode #2 along it's momentum quadrature
+
+# System
+system = GaussianCVSystem.free_evolution(2, np.array([0.0, 0.0])) # Initialize the system without any dynamics
+system.multi_annihilation_dissipator((1, 2), 1.0) # Update a single dissipative environment that acts on both modes (1,2). Lindblad of the form 1.0*(a_1 + a_2) for a_i is the annihilation operator of mode i
+
+# Evolution
+t_eval = np.linspace(0, 20, 500) # time grid for simulation
+solution = system.evolve_state(state, t_eval) # .evolve_state applies the system to state over the time grid and returns a GaussianSolution object containing the time-trace
+
+# Metrics
+ent = solution.entanglement_time_trace((1, 2)) # computes the logarithmic negativity between modes (1,2) over the time grid defined by the solution object. Returns a a list of Reals representing the time-trace of the entanglement.
+pur = solution.purity_time_trace() # computes the purity of the entire system over the time grid. Returns a list of Reals representing the time-traced purity.
+```
+
+---
+
+## Documentation
+
+[Full documentation is public for rapid prototyping. Click the link.](https://acouvertier.github.io/gaussian-open-systems/index.html)
+
+---
+
 ## Core Concepts
 
 ### Gaussian Representation
@@ -252,33 +285,6 @@ This structure separates:
 - observable extraction  
 
 to maintain clarity and extensibility.
-
----
-
-# Quickstart Example
-
-```python
-import numpy as np
-from gaussian_systems.initial_state import GaussianCVState
-from gaussian_systems.systems import GaussianCVSystem
-
-# State
-state = GaussianCVState.vacuum(2)
-state.single_mode_squeeze((1.0,0.0), 1)
-state.single_mode_squeeze((1.0,0.0), 2)
-
-# System
-system = GaussianCVSystem.free_evolution(2, np.array([0.0, 0.0]))
-system.multi_annihilation_dissipator((1, 2), 1.0)
-
-# Evolution
-t_eval = np.linspace(0, 20, 500)
-solution = system.evolve_state(state, t_eval)
-
-# Metrics
-ent = solution.entanglement_time_trace((1, 2))
-pur = solution.purity_time_trace()
-```
 
 ---
 
